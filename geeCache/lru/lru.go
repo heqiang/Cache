@@ -53,3 +53,17 @@ func (c *Cache) RemoveOldest() {
 		}
 	}
 }
+
+func (c *Cache) Add(key string, value Value) {
+	// 缓存中存在这个key值的时候 更新value值就行,并且将该元素移到队尾
+	if ele, ok := c.cache[key]; ok {
+		c.ll.MoveToFront(ele)
+		kv := ele.Value.(*entry)
+		c.nbytes += int64(value.Len()) - int64(kv.value.Len())
+		kv.value = value
+	} else {
+		ele := c.ll.PushFront(&entry{key: key, value: value})
+		c.cache[key] = ele
+		c.nbytes += int64(len(key)) + int64(value.Len())
+	}
+}
