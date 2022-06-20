@@ -23,10 +23,11 @@ type Value interface {
 	Len() int
 }
 
-func New(maxBytes int64, nbytes int64, onEvicted func(key string, value Value)) *Cache {
+func New(maxBytes int64, onEvicted func(key string, value Value)) *Cache {
 	return &Cache{
 		maxBytes:  maxBytes,
-		nbytes:    nbytes,
+		ll:        list.New(),
+		cache:     make(map[string]*list.Element),
 		OnEvicted: onEvicted,
 	}
 }
@@ -55,7 +56,6 @@ func (c *Cache) RemoveOldest() {
 }
 
 func (c *Cache) Add(key string, value Value) {
-	// 缓存中存在这个key值的时候 更新value值就行,并且将该元素移到队尾
 	if ele, ok := c.cache[key]; ok {
 		c.ll.MoveToFront(ele)
 		kv := ele.Value.(*entry)
@@ -66,4 +66,12 @@ func (c *Cache) Add(key string, value Value) {
 		c.cache[key] = ele
 		c.nbytes += int64(len(key)) + int64(value.Len())
 	}
+
+	for c.maxBytes != 0 && c.maxBytes < c.nbytes {
+		c.RemoveOldest()
+	}
+}
+
+func (c *Cache) Len() int {
+	return c.ll.Len()
 }
