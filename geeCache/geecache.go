@@ -27,9 +27,10 @@ var (
 	groups = make(map[string]*Group)
 )
 
+// NewGroup create a new instance of Group
 func NewGroup(name string, cacheBytes int64, getter Getter) *Group {
 	if getter == nil {
-		panic("no getter")
+		panic("nil Getter")
 	}
 	mu.Lock()
 	defer mu.Unlock()
@@ -38,15 +39,16 @@ func NewGroup(name string, cacheBytes int64, getter Getter) *Group {
 		getter:    getter,
 		mainCache: cache{cacheBytes: cacheBytes},
 	}
-
 	groups[name] = g
 	return g
 }
 
+// GetGroup returns the named group previously created with NewGroup, or
+// nil if there's no such group.
 func GetGroup(name string) *Group {
-	mu.Lock()
-	defer mu.Unlock()
+	mu.RLock()
 	g := groups[name]
+	mu.RUnlock()
 	return g
 }
 
@@ -55,14 +57,16 @@ func (g *Group) Get(key string) (ByteView, error) {
 		return ByteView{}, fmt.Errorf("key is required")
 	}
 
+	// 从缓存中获取
 	if v, ok := g.mainCache.get(key); ok {
-		log.Println("[GeeCache] int")
+		log.Println("[GeeCache] hit")
 		return v, nil
 	}
+	// 通过回调函数进行加载
 	return g.load(key)
 }
 
-func (g *Group) load(key string) (ByteView, error) {
+func (g *Group) load(key string) (value ByteView, err error) {
 	return g.getLocally(key)
 }
 
@@ -70,8 +74,8 @@ func (g *Group) getLocally(key string) (ByteView, error) {
 	bytes, err := g.getter.Get(key)
 	if err != nil {
 		return ByteView{}, err
-	}
 
+	}
 	value := ByteView{b: cloneBytes(bytes)}
 	g.populateCache(key, value)
 	return value, nil

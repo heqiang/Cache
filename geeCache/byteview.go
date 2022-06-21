@@ -5,7 +5,7 @@ type ByteView struct {
 }
 
 func (v ByteView) Len() int {
-	return v.Len()
+	return len(v.b)
 }
 
 func (v ByteView) ByteSlice() []byte {
