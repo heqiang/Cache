@@ -30,7 +30,7 @@ var (
 // NewGroup create a new instance of Group
 func NewGroup(name string, cacheBytes int64, getter Getter) *Group {
 	if getter == nil {
-		panic("nil Getter")
+		panic("crash")
 	}
 	mu.Lock()
 	defer mu.Unlock()
