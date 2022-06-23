@@ -6,7 +6,7 @@ import (
 )
 
 func Test_consis(t *testing.T) {
-	hash := New(3, func(data []byte) uint32 {
+	hash := NewMap(3, func(data []byte) uint32 {
 		i, _ := strconv.Atoi(string(data))
 		return uint32(i)
 	})
@@ -22,8 +22,19 @@ func Test_consis(t *testing.T) {
 		"27": "2",
 	}
 	for k, v := range testCase {
-		if hash.Get(k) != v {
-			t.Errorf("Asking for %s, should have yielded %s", k, v)
+		res := hash.Get(k)
+		if res != v {
+			t.Errorf("Asking for %s, should have yielded %s,but get is %s", k, v, res)
 		}
 	}
+	testCase["27"] = "8"
+	hash.Add("8")
+
+	for k, v := range testCase {
+		res := hash.Get(k)
+		if res != v {
+			t.Errorf("Asking for %s, should have yielded %s,but get is %s", k, v, res)
+		}
+	}
+
 }

@@ -1,7 +1,6 @@
 package consistenthash
 
 import (
-	"fmt"
 	"hash/crc32"
 	"sort"
 	"strconv"
@@ -17,7 +16,7 @@ type Map struct {
 	hashMap  map[int]string
 }
 
-func New(replicas int, fn Hash) *Map {
+func NewMap(replicas int, fn Hash) *Map {
 	a := &Map{
 		replicas: replicas,
 		hash:     fn,
@@ -42,7 +41,6 @@ func (m *Map) Add(keys ...string) {
 		}
 	}
 	sort.Ints(m.keys)
-	fmt.Println(m.keys)
 }
 
 func (m *Map) Get(key string) string {
@@ -53,7 +51,7 @@ func (m *Map) Get(key string) string {
 	hash := int(m.hash([]byte(key)))
 	// 换上都都放置都是我们标记都hash值
 	idx := sort.Search(len(m.keys), func(i int) bool {
-		return m.keys[i] > hash
+		return m.keys[i] >= hash
 	})
 
 	return m.hashMap[m.keys[idx%len(m.keys)]]
