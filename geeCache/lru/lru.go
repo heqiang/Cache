@@ -34,16 +34,17 @@ func New(maxBytes int64, onEvicted func(key string, value Value)) *Cache {
 
 func (c *Cache) Get(key string) (value Value, ok bool) {
 	if ele, ok := c.cache[key]; ok {
-		c.ll.MoveToFront(ele)
+		c.ll.MoveToBack(ele)
 		kv := ele.Value.(*entry)
 		return kv.value, true
 	}
 	return
 }
 
+// RemoveOldest 缓存淘汰 即移除最近最少访问的节点(队首)
 func (c *Cache) RemoveOldest() {
 	//获取到队列的的队首节点
-	ele := c.ll.Back()
+	ele := c.ll.Front()
 	if ele != nil {
 		c.ll.Remove(ele)
 		kv := ele.Value.(*entry)
@@ -57,12 +58,12 @@ func (c *Cache) RemoveOldest() {
 
 func (c *Cache) Add(key string, value Value) {
 	if ele, ok := c.cache[key]; ok {
-		c.ll.MoveToFront(ele)
+		c.ll.MoveToBack(ele)
 		kv := ele.Value.(*entry)
 		c.nbytes += int64(value.Len()) - int64(kv.value.Len())
 		kv.value = value
 	} else {
-		ele := c.ll.PushFront(&entry{key: key, value: value})
+		ele := c.ll.PushBack(&entry{key: key, value: value})
 		c.cache[key] = ele
 		c.nbytes += int64(len(key)) + int64(value.Len())
 	}

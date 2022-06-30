@@ -49,7 +49,6 @@ func (p *HttpPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.Log(r.Method, r.URL.Path)
 	// /<basepath>/<groupname>/<key> required
 	parts := strings.SplitN(r.URL.Path[len(p.basePath):], "/", 2)
-	fmt.Println(parts)
 	if len(parts) != 2 {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return

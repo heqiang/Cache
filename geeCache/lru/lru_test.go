@@ -13,14 +13,26 @@ func (d String) Len() int {
 }
 
 func TestGet(t *testing.T) {
-	lru := New(int64(0), nil)
+	lru := New(int64(100), nil)
 	lru.Add("key1", String("1234"))
-	if v, ok := lru.Get("key1"); !ok || string(v.(String)) != "1234" {
+	lru.Add("key2", String("4343"))
+	lru.Add("key3", String("dsada"))
+	lru.Add("key4", String("gdfs"))
+	lru.Add("key5", String("gbvc"))
+	for e := lru.ll.Front(); e != nil; e = e.Next() {
+		fmt.Println(e.Value)
+	}
+
+	if v, ok := lru.Get("key2"); !ok || string(v.(String)) != "4343" {
 		t.Fatalf("cache hit key1=1234 failed")
 	}
-	if _, ok := lru.Get("key2"); ok {
-		t.Fatalf("cache miss key2 failed")
+	fmt.Println("调用后")
+	for e := lru.ll.Front(); e != nil; e = e.Next() {
+		fmt.Println(e.Value)
 	}
+	//if _, ok := lru.Get("key2"); ok {
+	//	t.Fatalf("cache miss key2 failed")
+	//}
 }
 
 func TestRemoveoldest(t *testing.T) {
